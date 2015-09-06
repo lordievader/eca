@@ -1,5 +1,5 @@
-#include "Arduino.h"
-// #include <string>
+// #include "Arduino.h"
+#include <string>
 
 #define F_CPU 16000000
 #define ARDUINO 100
