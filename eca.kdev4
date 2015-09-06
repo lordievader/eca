@@ -1,0 +1,4 @@
+[Project]
+Name=eca
+Manager=KDevCMakeManager
+VersionControl=kdevgit
