@@ -1,14 +1,22 @@
+#ifdef ARDUINO_TARGET
 #include "Arduino.h"
-// #include <string>
-
 #define F_CPU 16000000
 #define ARDUINO 100
+#else
+#include <string>
+#include <ctime>
+#endif
 
 #include "ecamatrix.h"
 #include <stdio.h>
 using namespace::std;
 
-#ifdef Arduino_h
+const int rows = 20;
+const int columns = 20;
+unsigned char A[rows][columns];
+unsigned char B[rows][columns];
+
+#ifdef ARDUINO_TARGET
 void logMessage(String sMessage)
 {
     Serial.print(sMessage);
@@ -20,20 +28,48 @@ void logMessage(string sMessage)
 }
 #endif
 
-void printMatrix(unsigned char matrix[20][20])
+#ifdef ARDUINO_TARGET
+int getTime()
 {
-#ifdef Arduino_h
+    int time = millis();
+    return time;
+}
+void printTime(int begin, int end)
+{
+    int diff = end - begin;
+    char message[100];
+    snprintf(message, 100, "%d millisseconds have passed since the beginning of this program.\n", diff);
+    logMessage(String(message));
+}
+#else
+int getTime()
+{
+    int time = clock();
+    return time;
+}
+void printTime(int begin, int end)
+{
+    int diff = end - begin;
+    char message[100];
+    snprintf(message, 100, "There have been %d ticks since the beginning of this program.\n", diff);
+    logMessage(string(message));
+}
+#endif
+
+void printMatrix(unsigned char matrix[rows][columns])
+{
+#ifdef ARDUINO_TARGET
     String output = "";
 #else
     string output = "";
 #endif
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < rows; i++)
     {
-        for (int j = 0; j < 20; j++)
+        for (int j = 0; j < columns; j++)
         {
             char str[6];
             sprintf(str, "%3u, ", matrix[i][j]);
-#ifdef Arduino_h
+#ifdef ARDUINO_TARGET
             output += String(str);
 #else
             output += string(str);
@@ -45,25 +81,65 @@ void printMatrix(unsigned char matrix[20][20])
     }
 }
 
+int calcValue(unsigned char matrix[rows][columns], int row, int column)
+{
+    int A[columns];
+    int B[rows];
+    for (int j = 0; j < columns; j++)
+    {
+        A[j] = matrix[row][j];
+    }
+
+    for (int j = 0; j < rows; j++)
+    {
+        B[j] = matrix[j][column];
+    }
+
+    int value = 0;
+    for (int i = 0; i < rows; i++)
+    {
+        value += A[i] * B[i];
+    }
+    return value;
+}
+
+
+void squareMatrix(unsigned char source[rows][columns], unsigned char destination[rows][columns])
+{
+    for (int row = 0; row < rows; row++)
+    {
+        for (int column = 0; column < columns; column++)
+        {
+            destination[row][column] = calcValue(source, row, column);
+
+        }
+    }
+}
+
 void setup()
 {
-#ifdef Arduino_h
+#ifdef ARDUINO_TARGET
     Serial.begin(460800);
 #endif
-    unsigned char A[20][20];
     matrix(A);
     printMatrix(A);
+    logMessage("\n\n");
 }
 
 void loop()
 {
-    logMessage("DONE");
-#ifdef Arduino_h
+    int begin = getTime();
+    squareMatrix(A, B);
+    int end = getTime();
+    printMatrix(B);
+    printTime(begin, end);
+    logMessage("DONE\n");
+#ifdef ARDUINO_TARGET
     while(1);
 #endif
 }
 
-#ifndef Arduino_h
+#ifndef ARDUINO_TARGET
 int main(int argc, char **argv) {
     setup();
     loop();
