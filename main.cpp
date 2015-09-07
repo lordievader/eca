@@ -6,6 +6,8 @@
 #include <string>
 #include <ctime>
 #include <iostream>
+#include <sys/time.h>
+#include <unistd.h>
 #endif
 
 #include "ecamatrix.h"
@@ -15,9 +17,11 @@ using namespace::std;
 
 const int rows = 20;
 const int columns = 20;
-unsigned short A[rows][columns];
-unsigned short B[rows][columns];
-unsigned short C[rows][columns];
+unsigned char A[rows][columns];
+unsigned long int B[rows][columns];
+unsigned long int C[rows][columns];
+
+int birth;
 
 #ifdef ARDUINO_TARGET
 void logMessage(char message[])
@@ -29,12 +33,12 @@ void logMessage(String sMessage)
 {
     Serial.print(sMessage);
 }
-int getTime()
+unsigned int getTime()
 {
-    int time = micros();
+    unsigned int time = micros();
     return time;
 }
-void printTime(int avg)
+void printTime(unsigned int avg)
 {
     char message[100];
     snprintf(message, 100, "Calculation took %d microseconds on average.\nThat is %il ticks.", avg, int(floor((avg / 62.5)+0.5)));
@@ -56,15 +60,17 @@ void logMessage(string sMessage)
 {
     cout << sMessage.c_str();
 }
-int getTime()
+unsigned int getTime()
 {
-    int time = clock();
-    return time;
+    timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    unsigned int time_ns = (ts.tv_sec - birth) * 1e9 + ts.tv_nsec;
+    return time_ns;
 }
-void printTime(int ticks)
+void printTime(unsigned int time_ns)
 {
     char message[100];
-    snprintf(message, 100, "There have been %d ticks on average.\nThat is %.3li seconds.\n", ticks, (ticks/CLOCKS_PER_SEC));
+    snprintf(message, 100, "The matrix operation took %u nanoseconds on average.\n", time_ns);
     logMessage(string(message));
 }
 void printTime(int begin, int end)
@@ -77,7 +83,7 @@ void printTime(int begin, int end)
 }
 #endif
 
-void printMatrix(unsigned short matrix[rows][columns])
+void printMatrix(unsigned char matrix[rows][columns])
 {
 #ifdef ARDUINO_TARGET
     String output = "";
@@ -88,8 +94,8 @@ void printMatrix(unsigned short matrix[rows][columns])
     {
         for (int j = 0; j < columns; j++)
         {
-            char str[6];
-            sprintf(str, "%3u, ", matrix[i][j]);
+            char str[100];
+            snprintf(str, 100, "%3u, ", matrix[i][j]);
 #ifdef ARDUINO_TARGET
             output += String(str);
 #else
@@ -102,7 +108,32 @@ void printMatrix(unsigned short matrix[rows][columns])
     }
 }
 
-bool checkMatrix(unsigned short result[rows][columns], unsigned short correction[rows][columns])
+void printMatrix(unsigned long int matrix[rows][columns])
+{
+#ifdef ARDUINO_TARGET
+    String output = "";
+#else
+    string output = "";
+#endif
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < columns; j++)
+        {
+            char str[100];
+            snprintf(str, 100, "%3lu, ", matrix[i][j]);
+#ifdef ARDUINO_TARGET
+            output += String(str);
+#else
+            output += string(str);
+#endif
+        }
+        logMessage(output);
+        logMessage((char *)"\n");
+        output = "";
+    }
+}
+
+bool checkMatrix(unsigned long int result[rows][columns], unsigned long int correction[rows][columns])
 {
     int i = 0;
     while (i < rows)
@@ -112,6 +143,9 @@ bool checkMatrix(unsigned short result[rows][columns], unsigned short correction
         {
             if (result[i][j] != correction[i][j])
             {
+                char message[100];
+                snprintf(message, 100, "%lu != %lu", result[i][j], correction[i][j]);
+                logMessage(message);
                 return false;
             }
             j++;
@@ -121,9 +155,9 @@ bool checkMatrix(unsigned short result[rows][columns], unsigned short correction
     return true;
 }
 
-int calcValue(unsigned short matrix[rows][columns], int row, int column, int index)
+long int calcValue(unsigned char matrix[rows][columns], int row, int column, int index)
 {
-    int value = 0;
+    long int value = 0;
     while (index < rows)
     {
         value += matrix[row][index] * matrix[index][column];
@@ -133,7 +167,7 @@ int calcValue(unsigned short matrix[rows][columns], int row, int column, int ind
 }
 
 
-void squareMatrix(unsigned short source[rows][columns], unsigned short destination[rows][columns], int index)
+void squareMatrix(unsigned char source[rows][columns], unsigned long int destination[rows][columns], int index)
 {
     int row =  0;
     while (row < rows)
@@ -162,31 +196,39 @@ void setup()
 
 void loop()
 {
-    int avg = 0;
-    int index = 0;
+    unsigned int avg = 0;
+    unsigned char index = 0;
+    int round = 0;
     int rounds = 1000;
-    for (int i = 0; i <= rounds; i++)
+    bool faults = false;
+    while (round <= rounds)
+//     for (int i = 0; i <= rounds; i++)
     {
-        int begin = getTime();
+        unsigned int begin = getTime();
         squareMatrix(A, B, index);
-        int end = getTime();
+        unsigned int end = getTime();
         avg = (avg + (end - begin))/2;
         if (checkMatrix(B, C) == false)
         {
             logMessage((char *)"Fault detected");
+            faults = true;
             break;
         }
-        if (i % 100 == 0)
+        if (round % 100 == 0)
         {
             char message[100];
-            snprintf(message, 100, "status %10d/%10d: %3d\n", i, rounds, avg);
+            snprintf(message, 100, "status %10d/%10d: %3u\n", round, rounds, avg);
             logMessage(message);
         }
+        round++;
     }
     logMessage((char *)"\n");
-//     printMatrix(B);
-    printTime(avg);
-    logMessage((char *)"DONE\n");
+    if (faults == false)
+    {
+        printMatrix(B);
+        printTime(avg);
+        logMessage((char *)"DONE\n");
+    }
 #ifdef ARDUINO_TARGET
     while(1);
 #endif
@@ -194,6 +236,9 @@ void loop()
 
 #ifndef ARDUINO_TARGET
 int main(int argc, char **argv) {
+    timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    birth = ts.tv_sec;
     setup();
     loop();
     return 0;

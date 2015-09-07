@@ -1,4 +1,4 @@
-void matrix(unsigned short A[20][20])
+void matrix(unsigned char A[20][20])
 {
 	A[ 0][ 0] = 0b0000000001000110;
 	A[ 0][ 1] = 0b0000000011111000;
