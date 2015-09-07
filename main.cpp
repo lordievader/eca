@@ -17,7 +17,6 @@ using namespace::std;
 
 const int rows = 20;
 const int columns = 20;
-unsigned char A[rows][columns];
 unsigned long B[rows][columns];
 // unsigned long C[rows][columns];
 
@@ -188,7 +187,6 @@ void setup()
 #ifdef ARDUINO_TARGET
     Serial.begin(460800);
 #endif
-    matrix(A);
 //     ansmatrix(C);
     printMatrix(A);
     logMessage((char *)"\n\n");
@@ -196,8 +194,6 @@ void setup()
 
 void loop()
 {
-//     logMessage((char *)"DONE\n");
-//     while(1);
     unsigned int avg = 0;
     unsigned char index = 0;
     int round = 0;

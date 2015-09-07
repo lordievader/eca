@@ -21,15 +21,22 @@ with open(csv_file, 'r') as csv:
 
     matrix_rows = "".join(matrix_rows)
 
+row += 1
+column += 1
+
 with open('ecamatrix.h', 'w') as header:
     code = "#ifndef ECAMATRIX_H\n\
 #define ECAMATRIX_H\n\
-const PROGMEM uint32_t A[%d][%d] = {\n\
+#ifdef ARDUINO_TARGET\n\
+const PROGMEM unsigned char A[%d][%d] = {\n\
+#else\n\
+unsigned char A[%d][%d] = {\n\
+#endif\n\
 %s\n\
 };\n\
-#endif" % (row + 1, column + 1, matrix_rows)
+#endif" % (row, column, row, column, matrix_rows)
     print(code)
-    #header.write(code)
+    header.write(code)
 
 print()
 raise SystemExit()
