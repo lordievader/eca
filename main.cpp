@@ -5,16 +5,19 @@
 #else
 #include <string>
 #include <ctime>
+#include <iostream>
 #endif
 
 #include "ecamatrix.h"
+#include "ansmatrix.h"
 #include <stdio.h>
 using namespace::std;
 
 const int rows = 20;
 const int columns = 20;
-unsigned char A[rows][columns];
-unsigned char B[rows][columns];
+unsigned short A[rows][columns];
+unsigned short B[rows][columns];
+unsigned short C[rows][columns];
 
 #ifdef ARDUINO_TARGET
 void logMessage(char message[])
@@ -34,7 +37,7 @@ int getTime()
 void printTime(int avg)
 {
     char message[100];
-    snprintf(message, 100, "Calculation took %d microseconds on average.\nThat is %d ticks.", avg, int(floor((avg / 62.5)+0.5)));
+    snprintf(message, 100, "Calculation took %d microseconds on average.\nThat is %il ticks.", avg, int(floor((avg / 62.5)+0.5)));
     logMessage(message);
 }
 void printTime(int begin, int end)
@@ -45,9 +48,13 @@ void printTime(int begin, int end)
     logMessage(message);
 }
 #else
+void logMessage(char message[])
+{
+    cout << message;
+}
 void logMessage(string sMessage)
 {
-    printf(sMessage.c_str());
+    cout << sMessage.c_str();
 }
 int getTime()
 {
@@ -57,7 +64,7 @@ int getTime()
 void printTime(int ticks)
 {
     char message[100];
-    snprintf(message, 100, "There have been %d ticks on average.\nOne tick is %.3f milliseconds.\n", ticks, (1.0/CLOCKS_PER_SEC)*1000);
+    snprintf(message, 100, "There have been %d ticks on average.\nThat is %.3li seconds.\n", ticks, (ticks/CLOCKS_PER_SEC));
     logMessage(string(message));
 }
 void printTime(int begin, int end)
@@ -70,7 +77,7 @@ void printTime(int begin, int end)
 }
 #endif
 
-void printMatrix(unsigned char matrix[rows][columns])
+void printMatrix(unsigned short matrix[rows][columns])
 {
 #ifdef ARDUINO_TARGET
     String output = "";
@@ -90,12 +97,31 @@ void printMatrix(unsigned char matrix[rows][columns])
 #endif
         }
         logMessage(output);
-        logMessage("\n");
+        logMessage((char *)"\n");
         output = "";
     }
 }
 
-int calcValue(unsigned char matrix[rows][columns], int row, int column, int index)
+bool checkMatrix(unsigned short result[rows][columns], unsigned short correction[rows][columns])
+{
+    int i = 0;
+    while (i < rows)
+    {
+        int j = 0;
+        while (j < columns)
+        {
+            if (result[i][j] != correction[i][j])
+            {
+                return false;
+            }
+            j++;
+        }
+        i++;
+    }
+    return true;
+}
+
+int calcValue(unsigned short matrix[rows][columns], int row, int column, int index)
 {
     int value = 0;
     while (index < rows)
@@ -107,12 +133,12 @@ int calcValue(unsigned char matrix[rows][columns], int row, int column, int inde
 }
 
 
-void squareMatrix(unsigned char source[rows][columns], unsigned char destination[rows][columns], int index)
+void squareMatrix(unsigned short source[rows][columns], unsigned short destination[rows][columns], int index)
 {
     int row =  0;
-    int column = 0;
     while (row < rows)
     {
+        int column = 0;
         while (column < columns)
         {
             index = 0;
@@ -129,31 +155,38 @@ void setup()
     Serial.begin(460800);
 #endif
     matrix(A);
+    ansmatrix(C);
     printMatrix(A);
-    logMessage("\n\n");
+    logMessage((char *)"\n\n");
 }
 
 void loop()
 {
     int avg = 0;
     int index = 0;
-    int rounds = 10000;
+    int rounds = 1000;
     for (int i = 0; i <= rounds; i++)
     {
         int begin = getTime();
         squareMatrix(A, B, index);
         int end = getTime();
         avg = (avg + (end - begin))/2;
-        if (i % 1000 == 0)
+        if (checkMatrix(B, C) == false)
+        {
+            logMessage((char *)"Fault detected");
+            break;
+        }
+        if (i % 100 == 0)
         {
             char message[100];
-            snprintf(message, 100, "status %d/%d: %d\n", i, rounds, avg);
+            snprintf(message, 100, "status %10d/%10d: %3d\n", i, rounds, avg);
             logMessage(message);
         }
     }
+    logMessage((char *)"\n");
 //     printMatrix(B);
     printTime(avg);
-    logMessage("DONE\n");
+    logMessage((char *)"DONE\n");
 #ifdef ARDUINO_TARGET
     while(1);
 #endif
