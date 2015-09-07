@@ -61,3 +61,5 @@ with open('ansmatrix.cpp', 'w') as matrix:
 }\n" %(i + 1, j + 1, "\n".join(matrix_lines))
     print(code)
     matrix.write(code)
+
+print(B)
