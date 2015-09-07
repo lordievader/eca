@@ -9,6 +9,7 @@
 
 #include "ecamatrix.h"
 #include <stdio.h>
+#include <map>
 using namespace::std;
 
 const int rows = 20;
@@ -52,7 +53,7 @@ int getTime()
 void printTime(int ticks)
 {
     char message[100];
-    snprintf(message, 100, "There have been %d ticks on average.\n", ticks);
+    snprintf(message, 100, "There have been %d ticks on average.\nOne tick is %.3f milliseconds.\n", ticks, (1.0/CLOCKS_PER_SEC)*1000);
     logMessage(string(message));
 }
 void printTime(int begin, int end)
@@ -61,6 +62,7 @@ void printTime(int begin, int end)
     char message[100];
     snprintf(message, 100, "There have been %d ticks since the beginning of this program.\n", diff);
     logMessage(string(message));
+
 }
 #endif
 
@@ -89,26 +91,31 @@ void printMatrix(unsigned char matrix[rows][columns])
     }
 }
 
-int calcValue(unsigned char matrix[rows][columns], int row, int column)
+int calcValue(unsigned char matrix[rows][columns], int row, int column, int index)
 {
     int value = 0;
-    for (int i = 0; i < rows; i++)
+    while (index < rows)
     {
-        value += matrix[row][i] * matrix[i][column];
+        value += matrix[row][index] * matrix[index][column];
+        index++;
     }
     return value;
 }
 
 
-void squareMatrix(unsigned char source[rows][columns], unsigned char destination[rows][columns])
+void squareMatrix(unsigned char source[rows][columns], unsigned char destination[rows][columns], int index)
 {
-    for (int row = 0; row < rows; row++)
+    int row =  0;
+    int column = 0;
+    while (row < rows)
     {
-        for (int column = 0; column < columns; column++)
+        while (column < columns)
         {
-            destination[row][column] = calcValue(source, row, column);
-
+            index = 0;
+            destination[row][column] = calcValue(source, row, column, index);
+            column++;
         }
+        row++;
     }
 }
 
@@ -125,14 +132,15 @@ void setup()
 void loop()
 {
     int avg = 0;
-    for (int i = 0; i <= 1000; i++)
+    int index = 0;
+    for (int i = 0; i <= 1000000; i++)
     {
         int begin = getTime();
-        squareMatrix(A, B);
+        squareMatrix(A, B, index);
         int end = getTime();
         avg = (avg + (end - begin))/2;
     }
-    printMatrix(B);
+//     printMatrix(B);
     printTime(avg);
     logMessage("DONE\n");
 #ifdef ARDUINO_TARGET
