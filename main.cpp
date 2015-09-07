@@ -21,43 +21,45 @@ void logMessage(String sMessage)
 {
     Serial.print(sMessage);
 }
-#else
-void logMessage(string sMessage)
-{
-    printf(sMessage.c_str());
-}
-#endif
-
-#ifdef ARDUINO_TARGET
 int getTime()
 {
     int time = millis();
     return time;
 }
+void printTime(int avg)
+{
+    char message[100];
+    snprintf(message, 100, "Calculation took %d milliseconds on average.\n", avg);
+    logMessage(String(message));
+}
 void printTime(int begin, int end)
 {
     int diff = end - begin;
     char message[100];
-    snprintf(message, 100, "%d millisseconds have passed since the beginning of this program.\n", diff);
+    snprintf(message, 100, "%d milliseconds have passed since the beginning of this program.\n", diff);
     logMessage(String(message));
 }
 #else
+void logMessage(string sMessage)
+{
+    printf(sMessage.c_str());
+}
 int getTime()
 {
     int time = clock();
     return time;
+}
+void printTime(int ticks)
+{
+    char message[100];
+    snprintf(message, 100, "There have been %d ticks on average.\n", ticks);
+    logMessage(string(message));
 }
 void printTime(int begin, int end)
 {
     int diff = end - begin;
     char message[100];
     snprintf(message, 100, "There have been %d ticks since the beginning of this program.\n", diff);
-    logMessage(string(message));
-}
-void printTime(int ticks)
-{
-    char message[100];
-    snprintf(message, 100, "There have been %d ticks on average.\n", ticks);
     logMessage(string(message));
 }
 #endif
@@ -89,22 +91,9 @@ void printMatrix(unsigned char matrix[rows][columns])
 
 int calcValue(unsigned char matrix[rows][columns], int row, int column)
 {
-//     int A[columns];
-//     int B[rows];
-//     for (int j = 0; j < columns; j++)
-//     {
-//         A[j] = matrix[row][j];
-//     }
-//
-//     for (int j = 0; j < rows; j++)
-//     {
-//         B[j] = matrix[j][column];
-//     }
-
     int value = 0;
     for (int i = 0; i < rows; i++)
     {
-//         value += A[i] * B[i];
         value += matrix[row][i] * matrix[i][column];
     }
     return value;
@@ -136,7 +125,7 @@ void setup()
 void loop()
 {
     int avg = 0;
-    for (int i = 0; i <= 100000; i++)
+    for (int i = 0; i <= 1000; i++)
     {
         int begin = getTime();
         squareMatrix(A, B);
