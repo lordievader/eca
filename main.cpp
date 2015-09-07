@@ -9,7 +9,6 @@
 
 #include "ecamatrix.h"
 #include <stdio.h>
-#include <map>
 using namespace::std;
 
 const int rows = 20;
@@ -18,27 +17,32 @@ unsigned char A[rows][columns];
 unsigned char B[rows][columns];
 
 #ifdef ARDUINO_TARGET
+void logMessage(char message[])
+{
+    String sMessage = String(message);
+    Serial.print(sMessage);
+}
 void logMessage(String sMessage)
 {
     Serial.print(sMessage);
 }
 int getTime()
 {
-    int time = millis();
+    int time = micros();
     return time;
 }
 void printTime(int avg)
 {
     char message[100];
-    snprintf(message, 100, "Calculation took %d milliseconds on average.\n", avg);
-    logMessage(String(message));
+    snprintf(message, 100, "Calculation took %d microseconds on average.\nThat is %d ticks.", avg, int(floor((avg / 62.5)+0.5)));
+    logMessage(message);
 }
 void printTime(int begin, int end)
 {
     int diff = end - begin;
     char message[100];
-    snprintf(message, 100, "%d milliseconds have passed since the beginning of this program.\n", diff);
-    logMessage(String(message));
+    snprintf(message, 100, "%d microseconds have passed since the beginning of this program.\n", diff);
+    logMessage(message);
 }
 #else
 void logMessage(string sMessage)
@@ -133,12 +137,19 @@ void loop()
 {
     int avg = 0;
     int index = 0;
-    for (int i = 0; i <= 1000000; i++)
+    int rounds = 10000;
+    for (int i = 0; i <= rounds; i++)
     {
         int begin = getTime();
         squareMatrix(A, B, index);
         int end = getTime();
         avg = (avg + (end - begin))/2;
+        if (i % 1000 == 0)
+        {
+            char message[100];
+            snprintf(message, 100, "status %d/%d: %d\n", i, rounds, avg);
+            logMessage(message);
+        }
     }
 //     printMatrix(B);
     printTime(avg);
