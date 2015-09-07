@@ -6,24 +6,33 @@ csv_file = '20MatrixValues.csv'
 
 
 ## A
-matrix_lines = []
+matrix_rows = []
 with open(csv_file, 'r') as csv:
     for row, line in enumerate(csv.readlines()):
         line = line.replace('\n', '')
+        matrix_lines = ['\t{']
         for column, item in enumerate(line.split(',')):
             item = "{0:b}".format(int(item)).zfill(16)
-            output = "\tA[%2d][%2d] = 0b%s;" % (row, column, item)
+            output = "0b%s, " % (item)
             matrix_lines.append(output)
+
+        matrix_lines.append('},\n')
+        matrix_rows.append("".join(matrix_lines))
+
+    matrix_rows = "".join(matrix_rows)
 
 with open('ecamatrix.h', 'w') as header:
     code = "#ifndef ECAMATRIX_H\n\
 #define ECAMATRIX_H\n\
-void matrix(unsigned char A[%d][%d]);\n\
-#endif" % (row + 1, column + 1)
+const PROGMEM uint32_t A[%d][%d] = {\n\
+%s\n\
+};\n\
+#endif" % (row + 1, column + 1, matrix_rows)
     print(code)
-    header.write(code)
+    #header.write(code)
 
 print()
+raise SystemExit()
 
 with open('ecamatrix.cpp', 'w') as matrix:
     code = "void matrix(unsigned char A[%d][%d])\n\
@@ -35,7 +44,7 @@ with open('ecamatrix.cpp', 'w') as matrix:
 
 print('\n')
 
-
+raise SystemExit()
 
 ## B
 matrix_lines = []
@@ -67,4 +76,4 @@ with open('ansmatrix.cpp', 'w') as matrix:
     print(code)
     matrix.write(code)
 
-print(B)
+#print(B)

@@ -19,7 +19,7 @@ const int rows = 20;
 const int columns = 20;
 unsigned char A[rows][columns];
 unsigned long B[rows][columns];
-unsigned long C[rows][columns];
+// unsigned long C[rows][columns];
 
 int birth;
 
@@ -189,31 +189,33 @@ void setup()
     Serial.begin(460800);
 #endif
     matrix(A);
-    ansmatrix(C);
+//     ansmatrix(C);
     printMatrix(A);
     logMessage((char *)"\n\n");
 }
 
 void loop()
 {
+//     logMessage((char *)"DONE\n");
+//     while(1);
     unsigned int avg = 0;
     unsigned char index = 0;
     int round = 0;
-    int rounds = 1000;
+    int rounds = 1;
     bool faults = false;
+
     while (round <= rounds)
-//     for (int i = 0; i <= rounds; i++)
     {
         unsigned int begin = getTime();
         squareMatrix(A, B, index);
         unsigned int end = getTime();
         avg = (avg + (end - begin))/2;
-        if (checkMatrix(B, C) == false)
-        {
-            logMessage((char *)"Fault detected");
-            faults = true;
-            break;
-        }
+//         if (checkMatrix(B, C) == false)
+//         {
+//             logMessage((char *)"Fault detected");
+//             faults = true;
+//             break;
+//         }
         if (round % 100 == 0)
         {
             char message[100];
