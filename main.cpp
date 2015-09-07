@@ -82,7 +82,7 @@ void printTime(int begin, int end)
 }
 #endif
 
-void printMatrix(unsigned char matrix[rows][columns])
+void printMatrix(const unsigned char matrix[rows][columns])
 {
 #ifdef ARDUINO_TARGET
     String output = "";
@@ -154,7 +154,7 @@ bool checkMatrix(unsigned long result[rows][columns], unsigned long correction[r
     return true;
 }
 
-long int calcValue(unsigned char matrix[rows][columns], int row, int column, int index)
+long int calcValue(const unsigned char matrix[rows][columns], int row, int column, int index)
 {
     long int value = 0;
     while (index < rows)
@@ -166,7 +166,7 @@ long int calcValue(unsigned char matrix[rows][columns], int row, int column, int
 }
 
 
-void squareMatrix(unsigned char source[rows][columns], unsigned long destination[rows][columns], int index)
+void squareMatrix(const unsigned char source[rows][columns], unsigned long destination[rows][columns], int index)
 {
     int row =  0;
     while (row < rows)

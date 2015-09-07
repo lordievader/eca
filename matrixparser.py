@@ -30,7 +30,7 @@ with open('ecamatrix.h', 'w') as header:
 #ifdef ARDUINO_TARGET\n\
 const PROGMEM unsigned char A[%d][%d] = {\n\
 #else\n\
-unsigned char A[%d][%d] = {\n\
+const unsigned char A[%d][%d] = {\n\
 #endif\n\
 %s\n\
 };\n\
