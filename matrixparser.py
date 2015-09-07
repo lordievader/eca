@@ -52,7 +52,7 @@ for i, row in enumerate(B):
 with open('ansmatrix.h', 'w') as header:
     code = "#ifndef ANSMATRIX_H\n\
 #define ANSMATRIX_H\n\
-void ansmatrix(unsigned long int B[%d][%d]);\n\
+void ansmatrix(unsigned long B[%d][%d]);\n\
 #endif" % (i + 1, j + 1)
     print(code)
     header.write(code)
@@ -60,7 +60,7 @@ void ansmatrix(unsigned long int B[%d][%d]);\n\
 print()
 
 with open('ansmatrix.cpp', 'w') as matrix:
-    code = "void ansmatrix(unsigned long int B[%d][%d])\n\
+    code = "void ansmatrix(unsigned long B[%d][%d])\n\
 {\n\
 %s\n\
 }\n" %(i + 1, j + 1, "\n".join(matrix_lines))

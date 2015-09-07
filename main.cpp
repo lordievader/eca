@@ -18,8 +18,8 @@ using namespace::std;
 const int rows = 20;
 const int columns = 20;
 unsigned char A[rows][columns];
-unsigned long int B[rows][columns];
-unsigned long int C[rows][columns];
+unsigned long B[rows][columns];
+unsigned long C[rows][columns];
 
 int birth;
 
@@ -108,7 +108,7 @@ void printMatrix(unsigned char matrix[rows][columns])
     }
 }
 
-void printMatrix(unsigned long int matrix[rows][columns])
+void printMatrix(unsigned long matrix[rows][columns])
 {
 #ifdef ARDUINO_TARGET
     String output = "";
@@ -133,7 +133,7 @@ void printMatrix(unsigned long int matrix[rows][columns])
     }
 }
 
-bool checkMatrix(unsigned long int result[rows][columns], unsigned long int correction[rows][columns])
+bool checkMatrix(unsigned long result[rows][columns], unsigned long correction[rows][columns])
 {
     int i = 0;
     while (i < rows)
@@ -167,7 +167,7 @@ long int calcValue(unsigned char matrix[rows][columns], int row, int column, int
 }
 
 
-void squareMatrix(unsigned char source[rows][columns], unsigned long int destination[rows][columns], int index)
+void squareMatrix(unsigned char source[rows][columns], unsigned long destination[rows][columns], int index)
 {
     int row =  0;
     while (row < rows)

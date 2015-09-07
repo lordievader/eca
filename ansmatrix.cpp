@@ -1,4 +1,4 @@
-void ansmatrix(unsigned long int B[20][20])
+void ansmatrix(unsigned long B[20][20])
 {
 	B[ 0][ 0] = 0b00000000000001010101101011111001;
 	B[ 0][ 1] = 0b00000000000001101010100100001111;
