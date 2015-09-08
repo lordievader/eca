@@ -24,7 +24,6 @@ const unsigned char columns = 20;
 #endif
 
 unsigned char birth;
-char message[20];
 
 #ifdef ARDUINO_TARGET
 void freeMemory()
@@ -46,7 +45,8 @@ unsigned int getTime()
 }
 void printTime(unsigned int avg)
 {
-    snprintf(message, 20, "t=%uus\n", avg);
+    char message[50];
+    snprintf(message, 50, "t=%uus\n", avg);
     logMessage(message);
 }
 #else
@@ -63,7 +63,8 @@ unsigned int getTime()
 }
 void printTime(unsigned int time_ns)
 {
-    snprintf(message, 20, "The matrix operation took %u nanoseconds on average.\n", time_ns);
+    char message[50];
+    snprintf(message, 50, "The matrix operation took %u nanoseconds on average.\n", time_ns);
     logMessage(string(message));
 }
 #endif
@@ -93,27 +94,25 @@ void printTime(unsigned int time_ns)
 //     }
 // }
 
-// bool checkMatrix(unsigned long result[rows][columns], unsigned long correction[rows][columns])
-// {
-//     int i = 0;
-//     while (i < rows)
-//     {
-//         int j = 0;
-//         while (j < columns)
-//         {
-//             if (result[i][j] != correction[i][j])
-//             {
-//                 char message[100];
-//                 snprintf(message, 100, "%lu != %lu", result[i][j], correction[i][j]);
-//                 logMessage(message);
-//                 return false;
-//             }
-//             j++;
-//         }
-//         i++;
-//     }
-//     return true;
-// }
+void checkMatrix(unsigned long result[rows][columns], const unsigned long correction[rows][columns])
+{
+    unsigned char i = 0;
+    while (i < rows)
+    {
+        unsigned char j = 0;
+        while (j < columns)
+        {
+            if (result[i][j] != correction[i][j])
+            {
+                char message[50];
+                snprintf(message, 50, "(%d,%d)%ul!=%ul\n", i, j, result[i][j], correction[i][j]);
+                logMessage(message);
+            }
+            j++;
+        }
+        i++;
+    }
+}
 
 long int calcValue(const unsigned char matrix[rows][columns], unsigned char row, unsigned char column, unsigned char index)
 {
@@ -155,19 +154,17 @@ void loop()
 {
     unsigned char index = 0;
     unsigned char round = 0;
-    unsigned char rounds = 1000;
-    unsigned int avg = 0;
+    unsigned char rounds = 1;
     unsigned int time_point;
 unsigned long B[rows][columns];
 #ifdef ARDUINO_TARGET
 #endif
 
+    time_point = getTime();
     while (round <= rounds)
     {
-
-        time_point = getTime();
         squareMatrix(A, B, index);
-        avg = (avg + (getTime() - time_point))/2;
+
 //         if (checkMatrix(B, C) == false)
 //         {
 //             logMessage((char *)"ERR");
@@ -188,8 +185,9 @@ unsigned long B[rows][columns];
 //         logMessage((char *)"DONE\n");
         round++;
     }
+    printTime((getTime() - time_point)/rounds);
+//     checkMatrix(B, C);
     freeMemory();
-    printTime(avg);
 #ifdef ARDUINO_TARGET
     while(1);
 #endif
