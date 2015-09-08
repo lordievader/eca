@@ -64,8 +64,8 @@ unsigned int getTime()
 void printTime(unsigned int time_ns)
 {
     char message[50];
-    snprintf(message, 50, "The matrix operation took %u nanoseconds on average.\n", time_ns);
-    logMessage(string(message));
+    snprintf(message, 50, "t=%uns\n", time_ns);
+    logMessage(message);
 }
 #endif
 
@@ -105,7 +105,7 @@ void checkMatrix(unsigned long result[rows][columns], const unsigned long correc
             if (result[i][j] != correction[i][j])
             {
                 char message[50];
-                snprintf(message, 50, "(%d,%d)%ul!=%ul\n", i, j, result[i][j], correction[i][j]);
+                snprintf(message, 50, "(%d,%d)%lu!=%lu\n", i, j, result[i][j], correction[i][j]);
                 logMessage(message);
             }
             j++;
@@ -154,9 +154,9 @@ void loop()
 {
     unsigned char index = 0;
     unsigned char round = 0;
-    unsigned char rounds = 1;
+    unsigned char rounds = 1000;
     unsigned int time_point;
-unsigned long B[rows][columns];
+    unsigned long B[rows][columns];
 #ifdef ARDUINO_TARGET
 #endif
 
@@ -186,9 +186,9 @@ unsigned long B[rows][columns];
         round++;
     }
     printTime((getTime() - time_point)/rounds);
-//     checkMatrix(B, C);
-    freeMemory();
+    checkMatrix(B, C);
 #ifdef ARDUINO_TARGET
+    freeMemory();
     while(1);
 #endif
 }
