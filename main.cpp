@@ -1,5 +1,6 @@
 #ifdef ARDUINO_TARGET
 #include "Arduino.h"
+#include <TimerOne.h>
 #include <avr/pgmspace.h>
 #define F_CPU 16000000
 #define ARDUINO 100
@@ -24,23 +25,7 @@ const unsigned char rows = 20;
 const unsigned char columns = 20;
 #endif
 
-unsigned char birth;
-
 #ifdef ARDUINO_TARGET
-void logMessage(char message[])
-{
-    Serial.print(String(message));
-}
-unsigned int getTime()
-{
-    return micros();
-}
-void printTime(unsigned int avg)
-{
-    char message[50];
-    snprintf(message, 50, "t=%uus\n", avg);
-    logMessage(message);
-}
 void freeMemory()
 {
     extern unsigned int __bss_end;
@@ -49,25 +34,7 @@ void freeMemory()
     int free_memory;
     char message[50];
     snprintf(message, 50, "f=%db\n", ((int)&free_memory) - ((int)&__bss_end));
-    logMessage(message);
-}
-#else
-void logMessage(char message[])
-{
-    cout << message;
-}
-unsigned int getTime()
-{
-    timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    unsigned int time_ns = (ts.tv_sec - birth) * 1e9 + ts.tv_nsec;
-    return time_ns;
-}
-void printTime(unsigned int time_ns)
-{
-    char message[50];
-    snprintf(message, 50, "t=%uns\n", time_ns);
-    logMessage(message);
+    Serial.print(String(message));
 }
 #endif
 
@@ -96,7 +63,7 @@ void printTime(unsigned int time_ns)
 //     }
 // }
 
-bool checkMatrix(unsigned long result[rows][columns])
+bool checkMatrix(int result[rows][columns])
 {
     unsigned char i = 0;
     while (i < rows)
@@ -104,7 +71,7 @@ bool checkMatrix(unsigned long result[rows][columns])
         unsigned char j = 0;
         while (j < columns)
         {
-            unsigned long correct = pgm_read_dword(&C[i][j]);
+            int correct = pgm_read_word(&C[i][j]);
             if (result[i][j] != correct)
             {
                 Serial.print(result[i][j]);
@@ -124,55 +91,6 @@ bool checkMatrix(unsigned long result[rows][columns])
     return true;
 }
 
-unsigned long calcValue(unsigned char row, unsigned char column)
-{
-    unsigned long value = 0;
-    unsigned char index = 0;
-    while (index < rows)
-    {
-//         value += matrix[row][index] * matrix[index][column];
-        unsigned char item1 = pgm_read_word(&A[row][index]);
-        unsigned char item2 = pgm_read_word(&A[index][column]);
-        value += (unsigned long)item1 * (unsigned long)item2;
-        index++;
-    }
-    return value;
-}
-
-
-void squareMatrix(unsigned long destination[rows][columns])
-{
-    unsigned char row =  0;
-    unsigned char column;
-//     unsigned long value = 0;
-    while (row < rows)
-    {
-        column = 0;
-        while (column < columns)
-        {
-            destination[row][column] = calcValue(row, column);
-//             value = calcValue(row, column);
-            column++;
-        }
-        row++;
-    }
-}
-
-unsigned int calc(unsigned char rounds)
-{
-    unsigned char round = 0;
-    unsigned long B[rows][columns];
-    unsigned int time_point = getTime();
-    while (round <= rounds)
-    {
-        squareMatrix(B);
-        round++;
-    }
-    unsigned int total = getTime() - time_point;
-    Serial.println(checkMatrix(B));
-    return total;
-}
-
 void setup()
 {
 #ifdef ARDUINO_TARGET
@@ -185,10 +103,58 @@ void loop()
     unsigned char rounds = 1000;
 #ifdef ARDUINO_TARGET
     Serial.println(F("START"));
+    freeMemory();
+    Timer1.initialize(8191);
 #endif
-    unsigned int total = calc(rounds);
+
+    char cache[rows][columns];
+    int B[rows][columns];
+    unsigned char round = 0;
+    unsigned char row =  0;
+    unsigned char column;
+
+    while (row < rows)
+    {
+        column = 0;
+        while (column < columns)
+        {
+            cache[row][column] = (char)pgm_read_word(&A[row][column]);
+            column++;
+        }
+        row++;
+    }
+
+    Timer1.restart();
+    while (round <= rounds)
+    {
+        row = 0;
+        while (row < rows)
+        {
+            column = 0;
+            while (column < columns)
+            {
+                unsigned char index = 0;
+//                 B[row][column] = 0;
+                int temp = 0;
+                while (index < rows)
+                {
+//                     B[row][column] += cache[row][index] * cache[index][column];
+                    temp += cache[row][index] * cache[index][column];
+                    index++;
+                }
+                B[row][column] = temp;
+                column++;
+            }
+            row++;
+        }
+        round++;
+    }
+    unsigned int ticks = Timer1.read();
+    Serial.print(ticks / rounds * 0.0625);
+    Serial.println("us");
+    Serial.println(checkMatrix(B));
+
 #ifdef ARDUINO_TARGET
-    printTime(total/rounds);
     freeMemory();
     Serial.println(F("DONE"));
     while(1);

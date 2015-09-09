@@ -4,73 +4,73 @@ import numpy
 #csv_file = '/mnt/data/homedir/Documents/UT/Embedded_Computer_Architectures/MatrixValues.csv'
 csv_file = '20MatrixValues.csv'
 
-
-## A
 matrix_rows = []
-with open(csv_file, 'r') as csv:
-    for row, line in enumerate(csv.readlines()):
-        line = line.replace('\n', '')
-        matrix_lines = ['\t{']
-        for column, item in enumerate(line.split(',')):
-            item = "{0:b}".format(int(item)).zfill(16)
-            output = "0b%s, " % (item)
-            matrix_lines.append(output)
+A = numpy.loadtxt(open(csv_file, 'rb'), delimiter=',')
+n = numpy.amin(A)
+m = numpy.amax(A)
 
-        matrix_lines.append('},\n')
-        matrix_rows.append("".join(matrix_lines))
+c_rows = []
+for row, data in enumerate(A):
+    c_columns = ['\t{']
+    for column, value in enumerate(data):
+        output = "%d, " % int(value)
+        c_columns.append(output)
 
-    matrix_rows = "".join(matrix_rows)
+    c_columns.append('},\n')
+    c_rows.append("".join(c_columns))
+
+c_rows = "".join(c_rows)
 
 row += 1
 column += 1
 
-with open('ecamatrix.h', 'w') as header:
-    code = "#ifndef ECAMATRIX_H\n\
+code = "#ifndef ECAMATRIX_H\n\
 #define ECAMATRIX_H\n\
 #ifdef ARDUINO_TARGET\n\
-const PROGMEM unsigned char A[%d][%d] = {\n\
+const PROGMEM char A[%d][%d] = {\n\
 #else\n\
-const unsigned char A[%d][%d] = {\n\
+const char A[%d][%d] = {\n\
 #endif\n\
 %s\n\
 };\n\
-#endif" % (row, column, row, column, matrix_rows)
-    print(code)
-    header.write(code)
-
+#endif" % (row, column, row, column, c_rows)
+print(code)
 print('\n')
+with open('ecamatrix.h', 'w') as header:
+    header.write(code)
 
-## C
-matrix_rows = []
-A = numpy.loadtxt(open(csv_file, 'rb'), delimiter=',')
 C = numpy.dot(A, A)
-for i, row in enumerate(C):
-    matrix_lines = ['\t{']
-    for j, col in enumerate(C[i]):
-        item = "{0:b}".format(int(C[i][j])).zfill(32)
-        output = "0b%s, " % (item)
-        matrix_lines.append(output)
+x = numpy.amin(C)
+y = numpy.amax(C)
 
-    matrix_lines.append('},\n')
-    matrix_rows.append("".join(matrix_lines))
+c_rows = []
+for row, data in enumerate(C):
+    c_columns = ['\t{']
+    for column, value in enumerate(data):
+        output = "%d, " % int(value)
+        c_columns.append(output)
 
-matrix_rows = "".join(matrix_rows)
+    c_columns.append('},\n')
+    c_rows.append("".join(c_columns))
 
-i += 1
-j += 1
+c_rows = "".join(c_rows)
 
-with open('ansmatrix.h', 'w') as header:
-    code = "#ifndef ANSMATRIX_H\n\
-#define ANSMATRIX_H\n\
+row += 1
+column += 1
+
+code = "#ifndef ANSMATRIX_H\n\
+#define ANSAMATRIX_H\n\
 #ifdef ARDUINO_TARGET\n\
-const PROGMEM unsigned long C[%d][%d] = {\n\
+const PROGMEM int C[%d][%d] = {\n\
 #else\n\
-const unsigned long C[%d][%d] = {\n\
+const int C[%d][%d] = {\n\
 #endif\n\
 %s\n\
 };\n\
-#endif" % (i, j, i, j, matrix_rows)
-    print(code)
+#endif" % (row, column, row, column, c_rows)
+print(code)
+print('\n')
+with open('ansmatrix.h', 'w') as header:
     header.write(code)
 
-print(C)
+print("range: %d -- %d --> %d -- %d" % (n, m, x, y))
