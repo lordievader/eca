@@ -1,6 +1,6 @@
 #ifdef ARDUINO_TARGET
 #include "Arduino.h"
-#include <TimerOne.h>
+// #include <TimerOne.h>
 #include <avr/pgmspace.h>
 #define F_CPU 16000000
 #define ARDUINO 100
@@ -104,7 +104,7 @@ void loop()
 #ifdef ARDUINO_TARGET
     Serial.println(F("START"));
     freeMemory();
-    Timer1.initialize(8191);
+//     Timer1.initialize(8191);
 #endif
 
     char cache[rows][columns];
@@ -112,7 +112,6 @@ void loop()
     unsigned char round = 0;
     unsigned char row =  0;
     unsigned char column;
-
     while (row < rows)
     {
         column = 0;
@@ -124,7 +123,8 @@ void loop()
         row++;
     }
 
-    Timer1.restart();
+    int temp;
+    unsigned long timePoint = micros();
     while (round <= rounds)
     {
         row = 0;
@@ -133,25 +133,41 @@ void loop()
             column = 0;
             while (column < columns)
             {
-                unsigned char index = 0;
-//                 B[row][column] = 0;
-                int temp = 0;
-                while (index < rows)
-                {
-//                     B[row][column] += cache[row][index] * cache[index][column];
-                    temp += cache[row][index] * cache[index][column];
-                    index++;
-                }
+                temp = cache[row][0] * cache[0][column];
+                temp += cache[row][1] * cache[1][column];
+                temp += cache[row][2] * cache[2][column];
+                temp += cache[row][3] * cache[3][column];
+                temp += cache[row][4] * cache[4][column];
+                temp += cache[row][5] * cache[5][column];
+                temp += cache[row][6] * cache[6][column];
+                temp += cache[row][7] * cache[7][column];
+                temp += cache[row][8] * cache[8][column];
+                temp += cache[row][9] * cache[9][column];
+                temp += cache[row][10] * cache[10][column];
+                temp += cache[row][11] * cache[11][column];
+                temp += cache[row][12] * cache[12][column];
+                temp += cache[row][13] * cache[13][column];
+                temp += cache[row][14] * cache[14][column];
+                temp += cache[row][15] * cache[15][column];
+                temp += cache[row][16] * cache[16][column];
+                temp += cache[row][17] * cache[17][column];
+                temp += cache[row][18] * cache[18][column];
+                temp += cache[row][19] * cache[19][column];
                 B[row][column] = temp;
+
                 column++;
             }
             row++;
         }
         round++;
     }
-    unsigned int ticks = Timer1.read();
-    Serial.print(ticks / rounds * 0.0625);
-    Serial.println("us");
+    timePoint = micros() - timePoint;
+    Serial.print(timePoint/rounds);
+    Serial.println(" us");
+    Serial.print(timePoint / rounds * 16);
+    Serial.println(" ticks");
+    Serial.print(timePoint / rounds * 16 / (20 * 20 * 20));
+    Serial.println(" ticks per multiplication");
     Serial.println(checkMatrix(B));
 
 #ifdef ARDUINO_TARGET
