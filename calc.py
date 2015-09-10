@@ -1,53 +1,17 @@
 #!/usr/bin/python3
 
-adds = []
+code = []
 for column in range(20):
-    for i in range(20):
+    code.append("temp = cache[row][0] * cache[0][%d];" % (column))
+    for i in range(1, 20):
         output = "temp += cache[row][%d] * cache[%d][%d];" % (i, i, column)
-        adds.append(output)
+        code.append(output)
 
-    adds.append('B[row][%d] = temp;\ntemp = 0;' % column)
+    code.append('B[row][%d] = temp;\n' % (column))
 
 
-adds = "\n".join(adds)
-print(adds)
+code = "\n".join(code)
+print(code)
 print('\n')
-with open('calc.tmp', 'w') as calc:
-    calc.write(adds)
-
-#adds = []
-#for i in range(10):
-    #output = "cache[row][%d] * cache[%d][column]" % (i, i)
-    #adds.append(output)
-
-#adds = " + ".join(adds)
-#output = "item1 = %s;" % adds
-#print(output)
-
-#adds = []
-#for i in range(10, 20):
-    #output = "cache[row][%d] * cache[%d][column]" % (i, i)
-    #adds.append(output)
-
-#adds = " + ".join(adds)
-#output = "item2 = %s;" % adds
-#print(output)
-
-
-#adds = []
-#for i in range(10):
-    #output = "item1 += cache[row][%d] * cache[%d][column];\n" % (i, i)
-    #adds.append(output)
-
-#adds = "".join(adds)
-#print(adds)
-#print('\n')
-
-#adds = []
-#for i in range(10, 20):
-    #output = "item2 += cache[row][%d] * cache[%d][column];\n" % (i, i)
-    #adds.append(output)
-
-#adds = "".join(adds)
-#print(adds)
-#print('\n')
+with open('calc.h', 'w') as calc:
+    calc.write(code)
