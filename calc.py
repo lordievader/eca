@@ -10,6 +10,7 @@ for column in range(20):
     code.append('B[row][%d] = temp;\n' % (column))
 
 
+
 code = "\n".join(code)
 print(code)
 print('\n')

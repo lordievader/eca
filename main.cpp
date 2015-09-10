@@ -13,70 +13,44 @@
 
 #include "ecamatrix.h"
 #include "ansmatrix.h"
-#include <stdio.h>
 using namespace::std;
 
 const unsigned char rows = 20;
 const unsigned char columns = 20;
 
-#ifdef ARDUINO_TARGET
-void freeMemory()
-{
-    extern unsigned int __bss_end;
-    extern unsigned int __heap_start;
-    extern void *__brkval;
-    int free_memory;
-    char message[50];
-    snprintf(message, 50, "f=%db\n", ((int)&free_memory) - ((int)&__bss_end));
-    Serial.print(message);
-}
-#endif
-
-// void printMatrix(unsigned long matrix[rows][columns])
+// #ifdef ARDUINO_TARGET
+// void freeMemory()
 // {
-// #ifdef ARDUINO_TARGET
-//     String output = "";
-// #else
-//     string output = "";
-// #endif
-//     for (int i = 0; i < rows; i++)
-//     {
-//         for (int j = 0; j < columns; j++)
-//         {
-//             char str[100];
-//             snprintf(str, 100, "%3lu, ", matrix[i][j]);
-// #ifdef ARDUINO_TARGET
-//             output += String(str);
-// #else
-//             output += string(str);
-// #endif
-//         }
-//         logMessage(output);
-//         logMessage((char *)"\n");
-//         output = "";
-//     }
+//     extern unsigned int __bss_end;
+//     extern unsigned int __heap_start;
+//     extern void *__brkval;
+//     int free_memory;
+//     char message[50];
+//     snprintf(message, 50, "f=%db\n", ((int)&free_memory) - ((int)&__bss_end));
+//     Serial.print(message);
 // }
+// #endif
 
-bool checkMatrix(int result[rows][columns])
+bool checkMatrix(int result[rows][columns], unsigned char i, unsigned char j)
 {
-    unsigned char i = 0;
+    i = 0;
+    j = 0;
     while (i < rows)
     {
-        unsigned char j = 0;
+        j = 0;
         while (j < columns)
         {
 #ifdef ARDUINO_TARGET
-            int correct = pgm_read_word(&C[i][j]);
-            if (result[i][j] != correct)
+            if (result[i][j] != pgm_read_word(&C[i][j]))
             {
-                Serial.print(result[i][j]);
-                Serial.print(F(" != "));
-                Serial.print(correct);
-                Serial.print(F(" ("));
-                Serial.print(i);
-                Serial.print(F(","));
-                Serial.print(j);
-                Serial.println(F(")"));
+//                 Serial.print(result[i][j]);
+//                 Serial.print(F(" != "));
+//                 Serial.print(pgm_read_word(&C[i][j]));
+//                 Serial.print(F(" ("));
+//                 Serial.print(i);
+//                 Serial.print(F(","));
+//                 Serial.print(j);
+//                 Serial.println(F(")"));
                 return false;
             }
 #else
@@ -106,7 +80,6 @@ void loop()
     int rounds = 1000;
 #ifdef ARDUINO_TARGET
     Serial.println(F("START"));
-    freeMemory();
 #else
     cout << "START" << endl;
 #endif
@@ -155,9 +128,9 @@ void loop()
     Serial.println(" ticks");
     Serial.print(timePoint / rounds * 16 / (20 * 20 * 20));
     Serial.println(" ticks per multiplication");
-    Serial.println(checkMatrix(B));
+    Serial.println(checkMatrix(B, row, column));
 
-    freeMemory();
+//     freeMemory();
     Serial.println(F("DONE"));
     while(1);
 #else
@@ -166,7 +139,7 @@ void loop()
     cout << diff / rounds / CLOCKS_PER_SEC << " us" << endl;
     cout << diff / rounds << " clicks" << endl;
     cout << diff / rounds / (20 * 20 * 20) << " ticks per multiplication" << endl;
-    cout << checkMatrix(B) << endl;
+    cout << checkMatrix(B, row, column) << endl;
     cout << "DONE" << endl;
 #endif
 }
