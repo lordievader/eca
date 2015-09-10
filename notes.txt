@@ -1,2 +1,0 @@
-Initial 20x20:        11
-Del for loop 20x20:    8
