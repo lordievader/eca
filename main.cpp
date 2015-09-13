@@ -18,6 +18,38 @@ using namespace::std;
 const unsigned char rows = 20;
 const unsigned char columns = 20;
 
+void printMatrix(int result[rows][columns], unsigned char row, unsigned char column)
+{
+    row = 0;
+    while (row < rows)
+    {
+        column = 0;
+        while (column < columns)
+        {
+            char message[5];
+            snprintf(message, 5, "%5d", result[row][column]);
+            #ifdef ARDUINO_TARGET
+            Serial.print(message);
+            Serial.print(F(", "));
+            #else
+            cout << message << ", ";
+            #endif
+            column++;
+        }
+        #ifdef ARDUINO_TARGET
+        Serial.println();
+        #else
+        count << endl;
+        #endif
+        row++;
+    }
+    #ifdef ARDUINO_TARGET
+    Serial.println();
+    #else
+    count << endl;
+    #endif
+}
+
 bool checkMatrix(int result[rows][columns], unsigned char i, unsigned char j)
 {
 	i = 0;
@@ -110,13 +142,16 @@ void loop()
 	}
 	#ifdef ARDUINO_TARGET
 	timePoint = micros() - timePoint;
+        if (checkMatrix(B, row, column) == true)
+        {
+            printMatrix(B, row, column);
+        }
 	Serial.print(timePoint/rounds);
 	Serial.println(" us");
 	Serial.print(timePoint / rounds * 16);
 	Serial.println(" ticks");
 	Serial.print(timePoint / rounds * 16 / (20 * 20 * 20));
 	Serial.println(" ticks per multiplication");
-	Serial.println(checkMatrix(B, row, column));
 	Serial.println(F("DONE"));
 	while(1);
 	#else
