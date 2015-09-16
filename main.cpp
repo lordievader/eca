@@ -124,22 +124,41 @@ void loop()
 	}
 
 
-	int temp[rows];
+
+
+
 	#ifdef ARDUINO_TARGET
 	unsigned long timePoint = micros();
 	#else
 	clock_t timePoint = clock();
 	#endif
-	while (round <= rounds)
-	{
-		row = 0;
-		while (row < rows)
-		{
-			#include "calc.h"
-			row++;
-		}
-		round++;
-	}
+
+        int temp;
+        unsigned char index;
+        while (round <= rounds)
+        {
+            row = 0;
+            while (row < rows)
+            {
+                column = 0;
+                while (column < columns)
+                {
+                    index = 0;
+                    temp = 0;
+                    while (index < rows)
+                    {
+                        temp += cache[row][index] * cache[index][column];
+                        index++;
+                    }
+                    B[row][column] = temp;
+                    column++;
+                }
+                row++;
+            }
+            round++;
+        }
+
+
 	#ifdef ARDUINO_TARGET
 	timePoint = micros() - timePoint;
         if (checkMatrix(B, row, column) == true)
