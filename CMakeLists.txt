@@ -33,6 +33,6 @@ set(CMAKE_BUILD_TYPE Release)
 
 ## Compiler flags
 if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "-Ofast")        ## Optimize
+    set(CMAKE_CXX_FLAGS "-Ofast -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -Wall -mmcu=atmega328p -save-temps -MD -MP -MF")
     set(CMAKE_EXE_LINKER_FLAGS "-s")  ## Strip binary
 endif()
